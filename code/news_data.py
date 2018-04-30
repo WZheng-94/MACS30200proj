@@ -4,9 +4,9 @@ import datetime
 import numpy as np
 from multiprocessing import Pool
 import math
+import csv
 
 DF = pd.read_csv('full_data.csv')
-URL = DF['url']
 DF_TARGET = DF[['post_id', 'url', 'title']]
 
 NCHUNKS = 4
@@ -24,7 +24,7 @@ def find_ranges(df,num_chunks):
 
 	return ranges
 
-RANGES = find_ranges(URL, NCHUNKS)
+RANGES = find_ranges(DF_TARGET, NCHUNKS)
 
 def get_news_data(url):
 
@@ -47,36 +47,38 @@ def get_news_data(url):
 		return default
 
 
+
 def combine_sub_df(ranges):
 
-	data_list = []
 	up, down = ranges
-	for url in URL.iloc[up:down]:
-		try:
+	for ind, row in DF_TARGET.iloc[up:down, :].iterrows():
+		with open('newspaper.csv', 'a') as f:
+			writer = csv.writer(f, delimiter=',')
+			url = row['url']
+			post_id = row['post_id']
 			data = list(get_news_data(url))
-		except UnicodeEncodeErro as e:
-			data = [''] * 5
-		data_list.append(data)	
-	data_new = np.array(data_list)
-	col = ['author', 'date', 'text', 'keywords', 'summary']
-	df = pd.DataFrame(data_new, columns=col)
-	df['author'] = df['author'].apply(lambda x: ','.join(x))
-	df['keywords'] = df['keywords'].apply(lambda x: ','.join(x))
-	
+			data_all = [row['post_id'], row['url'], row['title']] + data
+			writer.writerow(data_all)
+
+	return 
 
 
-	return df
-
-# args = zip([TITLE] * NCHUNKS, RANGES)
-# return pd.concat([DF_TARGET, df], axis = 1)
 
 if __name__ == '__main__':
 	with Pool(NCHUNKS) as p:
 		p.map(combine_sub_df, RANGES)
-	# 	DF_SUB = pd.concat(dfs, axis = 0, ignore_index=True)
+	DF_RAW = pd.read_csv('newspaper.csv')
+	DF_RAW.columns = ['post_id', 'url', 'title', 'author', 'date', 'text', \
+					'keywords', 'summary']
+	DF_RAW = DF_RAW.drop_duplicates()
+	DF_RAW = DF_RAW[~DF_RAW['text'].isnull()]
+	DF_RAW['author'] = DF_RAW['author'].apply(lambda x: x.strip("'[]"))
+	DF_RAW['keywords'] = DF_RAW['keywords'].apply(lambda x: x.strip("'[]"))
+	DF_RAW.to_csv('newspaper_clean.csv')
 
-	# DF_FINAL = pd.concat([DF_TARGET, DF_SUB], axis = 1, ignore_index=True)
-	# DF_FINAL.to_csv('newspaper.csv')
+	
+
+
 
 
 

@@ -68,13 +68,13 @@ if __name__ == '__main__':
 	with Pool(NCHUNKS) as p:
 		p.map(combine_sub_df, RANGES)
 	DF_RAW = pd.read_csv('newspaper.csv')
-	DF_RAW.columns = ['post_id', 'url', 'title', 'author', 'date', 'text', \
-					'keywords', 'summary']
-	DF_RAW = DF_RAW.drop_duplicates()
-	DF_RAW = DF_RAW[~DF_RAW['text'].isnull()]
-	DF_RAW['author'] = DF_RAW['author'].apply(lambda x: x.strip("'[]"))
-	DF_RAW['keywords'] = DF_RAW['keywords'].apply(lambda x: x.strip("'[]"))
-	DF_RAW.to_csv('newspaper_clean.csv')
+# 	DF_RAW.columns = ['post_id', 'url', 'title', 'author', 'date', 'text', \
+# 					'keywords', 'summary']
+# 	DF_RAW = DF_RAW.drop_duplicates()
+# 	DF_RAW = DF_RAW[~DF_RAW['text'].isnull()]
+# 	DF_RAW['author'] = DF_RAW['author'].apply(lambda x: x.strip("'[]"))
+# 	DF_RAW['keywords'] = DF_RAW['keywords'].apply(lambda x: x.strip("'[]"))
+# 	DF_RAW.to_csv('newspaper_clean.csv')
 
 	
 

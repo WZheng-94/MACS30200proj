@@ -1,56 +1,19 @@
-import praw
 import json
 import pandas as pd
-import math
 from multiprocessing import Pool
 import prawcore
+import os.path
+import util
+import praw
 
 DF = pd.read_csv('full_data.csv')
 POST_ID = DF['post_id']
 NCHUNKS = 4
+REDDITS = util.REDDITS
 
 
-REDDIT_1 = praw.Reddit(client_id = 'Ip1jf64PVY6_QQ', 
-						client_secret = 'qIBcz5jWTmcqs5TpPM9SDpmKYlo', 
-						username = 'ErWeiZheng', 
-						password= 'TesanZheng1006', 
-						user_agent='praw_trial')
-
-REDDIT_2 = praw.Reddit(client_id = 'FGVEIcwf1MNiIw', 
-						client_secret = '8cTiak9cFTx0s0W4EOMOg_o7Bag', 
-						username = 'ErWeiZheng', 
-						password= 'TesanZheng1006', 
-						user_agent='praw_trial_2')
-
-REDDIT_3 = praw.Reddit(client_id = 'BclBM7ciAkAEqA', 
-						client_secret = 'gDXfV5-Co0To-GRUdtdIJqB0qUY', 
-						username = 'ErWeiZheng', 
-						password= 'TesanZheng1006', 
-						user_agent='praw_trial_3')
-
-REDDIT_4 = praw.Reddit(client_id = 'SzuNTymQSs0jQg', 
-						client_secret = 'Q1Y0IF9O0nT62LS2vj5YuNgAdBU', 
-						username = 'ErWeiZheng', 
-						password= 'TesanZheng1006', 
-						user_agent='praw_trial_4')
-
-REDDITS = [REDDIT_1, REDDIT_2, REDDIT_3, REDDIT_4]
-
-def find_ranges(df,num_chunks):
-
-	ranges = []
-	max_size = df.shape[0]
-	size = math.ceil(max_size/num_chunks)
-	start = 0
-	for i in range(num_chunks):
-		end = min(start + size, max_size)
-		ranges.append((start,end))
-		start = end 
-
-	return ranges
-
-
-RANGES = find_ranges(POST_ID, NCHUNKS) 
+RANGES = util.find_ranges(POST_ID, NCHUNKS) 
+# RANGES = [(10000)]
 
 
 def build_comment_dict(r, submit_id):
@@ -67,7 +30,7 @@ def build_comment_dict(r, submit_id):
 		if label not in rv_dict:
 			sub_dict = {}
 			sub_dict['author'] = str(comment.author)
-			sub_dict['replies'] = []
+			# sub_dict['replies'] = []
 			# if comment.body == '[deleted]':
 			# 	sub_dict['deleted'] = True
 			# else:
@@ -99,14 +62,15 @@ def save_comments(args):
 	r, ranges = args
 	up, down = ranges
 	for submit_id in POST_ID.iloc[up: down]:
-		rv_dict = build_comment_dict(r, submit_id)
-		if rv_dict == None:
-			print(submit_id)
-		else:
-			file_name = submit_id + '.json'
-			dir_name = "./comments/" + file_name
-			with open(dir_name, 'w', encoding='UTF-8') as fp:
-				json.dump(rv_dict, fp)
+		file_name = submit_id + '.json'
+		dir_name = "./comments/" + file_name
+		if not os.path.isfile(dir_name):
+			rv_dict = build_comment_dict(r, submit_id)
+			if rv_dict == None:
+				print(submit_id)
+			else:
+				with open(dir_name, 'w', encoding='UTF-8') as fp:
+					json.dump(rv_dict, fp)
 
 	return 
 

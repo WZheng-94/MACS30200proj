@@ -1,4 +1,4 @@
-import reddit
+
 import praw
 import prawcore
 from time import sleep
@@ -29,13 +29,15 @@ def get_author_info(r, author):
 	return [author, link, comment]
 
 
-def get_all_author_info(r, authors):
+def get_all_author_info(arg):
 
-	for author in authors:
+	r, ranges = arg
+	up, down = ranges
+	for author in AUTHOR_DIFF.iloc[up:down]:
 		data = ['', '', '']
 		try :
 			data = get_author_info(r, author)
-		except prawcore.exceptions.NotFound:
+		except:
 			sleep(5)
 
 		with open('author.csv', 'a') as f:
@@ -43,7 +45,6 @@ def get_all_author_info(r, authors):
 			writer.writerow(data)
 
 	return 
-
 
 
 if __name__ == '__main__':

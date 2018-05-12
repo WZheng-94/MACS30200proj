@@ -23,9 +23,10 @@ def get_all_authors():
 
 	all_authors = set()
 	for file in os.listdir(COMMENT_DIR):
-		filename = os.fsdecode(file)
-		author_set = get_one_authors(filename)
-		all_authors = all_authors.union(author_set)
+		filename = 'comments/' + os.fsdecode(file)
+		if filename != 'comments/.DS_Store':
+			author_set = get_one_authors(filename)
+			all_authors = all_authors.union(author_set)
 
 	return all_authors
 

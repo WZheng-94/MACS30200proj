@@ -41,8 +41,8 @@ def get_all_author_info(arg):
 			sleep(5)
 
 		with open('author.csv', 'a') as f:
-			writer = csv.writer(f, delimiter = ',')
-			writer.writerow(data)
+			wr = csv.writer(f, delimiter = ',')
+			wr.writerow(data)
 
 	return 
 
